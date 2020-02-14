@@ -72,7 +72,6 @@ ax1.set_ylabel('Log de vraisemblance négative')
 ax1.set_xlabel('Epoch')
 ax1.legend(loc='best')
 
-
 ax2 = plt.subplot2grid((4,8), (0,6),colspan=2, rowspan=3)
 ax2.imshow(best_W[4, :].reshape(8, 8))
 ax2.set_title('Poids W appris pour le chiffre 4')
