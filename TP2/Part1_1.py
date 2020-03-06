@@ -54,22 +54,22 @@ training_time_keras = end_time - start_time
 print("Training Time = %.3f seconds" % (training_time_keras))
 
 # collect and plot the losses for the training and validation sets
-accuracy = history.history['acc']
-loss = history.history[ 'loss']
-val_accuracy = history.history['val_acc']
-val_loss = history.history['val_loss']
+accuracies = history.history['acc']
+losses = history.history['loss']
+val_accuracies = history.history['val_acc']
+val_losses = history.history['val_loss']
 
 plt.figure(figsize=(14, 6))
-plt.plot(loss, label="train")
-plt.plot(val_loss, label="validation")
+plt.plot(losses, label="train")
+plt.plot(val_losses, label="validation")
 plt.title('Courbes d\'apprentissage Loss / Epochs')
 plt.ylabel('Log de vraisemblance négative')
 plt.xlabel('Epoch')
 plt.legend(loc='best')
 
 plt.figure()
-plt.plot(accuracy, label="train")
-plt.plot(val_accuracy, label="validation")
+plt.plot(accuracies, label="train")
+plt.plot(val_accuracies, label="validation")
 plt.title('Courbes d\'apprentissage Accuracy / Epochs')
 plt.ylabel('Accuracy')
 plt.xlabel('Epoch')

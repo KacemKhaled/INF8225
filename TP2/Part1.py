@@ -6,7 +6,6 @@ from keras.datasets import mnist
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
-import torch
 
 def one_hot(y, K):
     y_one_hot = np.zeros((y.shape[0], K))  # we have K classes, the general form is len(np.unique(y)
