@@ -6,7 +6,7 @@ from keras.datasets import mnist
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
-
+import torch
 
 def one_hot(y, K):
     y_one_hot = np.zeros((y.shape[0], K))  # we have K classes, the general form is len(np.unique(y)
@@ -47,12 +47,12 @@ def relu_backward(X):
 def get_loss(y, y_pred):
     eps = 1.0e-10
     y_pred = np.clip(y_pred, eps, 1 - eps)  # to prevent dividing by zero
-    # a = - np.mean(y * np.log(y_pred))
-    return - np.nanmean(y * np.log(y_pred))
+    return - np.sum(y * np.log(y_pred)) / len(y) #
+    # computing the average helps normalize curves to present them at the same scale when
+    # the sizes of the train and validation set are not the same
 
 
 def get_accuracy(y_pred, y):
-
     return np.sum(np.argmax(y_pred, axis=1) == np.argmax(y, axis=1)) / len(y)
 
 
@@ -123,6 +123,8 @@ class NeuralNetwork:
         best_accuracy = 0
         losses_train = []
         losses_val = []
+        accuracies_train = []
+        accuracies_val = []
 
         for epoch in range(nb_epochs):
             loss = 0
@@ -135,7 +137,7 @@ class NeuralNetwork:
                 y_train_mini = y_train[i:i + minibatch_size] if (i + minibatch_size < X_train.shape[0]) \
                     else y_train[i:X_train.shape[0]]
 
-                self.progress(i + minibatch_size, len(X_train))
+                self.progress(min(i + minibatch_size, len(X_train)), len(X_train))
                 # forward pass for each example
                 # for each layer node_in is the list of nodes where node_in = W x + b
                 node_in = [None] * (L + 2)
@@ -184,9 +186,11 @@ class NeuralNetwork:
 
             # compute the accuracy on the training set
             accuracy = get_accuracy(y_train_pred, y_train)
+            accuracies_train.append(accuracy)
 
             # compute the accuracy on the validation set
             accuracy_val = get_accuracy(y_validation_pred, y_validation)
+            accuracies_val.append(accuracy_val)
 
             print(' - loss: %.4f - acc: %.4f - val_loss: %.4f - val_acc: %.4f' % (loss, accuracy, loss_val, accuracy_val))
 
@@ -202,7 +206,7 @@ class NeuralNetwork:
         accuracy_on_unseen_data = get_accuracy(y_test_pred, y_test)
         print("Best Accuracy on validation data: %.4f" % (best_accuracy))
         print("Accuracy on test data: %.4f" % (accuracy_on_unseen_data))
-        return losses_train, losses_val, best_teta, best_accuracy
+        return losses_train, losses_val, accuracies_train, accuracies_val, best_teta, best_accuracy
 
 
 def run():
@@ -223,29 +227,34 @@ def run():
     # shuffle the dataset
     X_train, y_train = shuffle(X_train, y_train)
 
-    X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5, random_state=42)
+    X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
 
     NN = NeuralNetwork(no_of_in_nodes=784, no_of_out_nodes=10, no_of_hidden_nodes=300, no_of_hidden_layers=3)
     start_time = time.time()
-    losses_train, losses_val, best_teta, best_accuracy = NN.train(X_train[:], y_train[:],
-                                                                  X_validation, y_validation,
-                                                                  X_test, y_test,
-                                                                  lr=0.001, nb_epochs=20, minibatch_size=32)
+    losses_train, losses_val, accuracies_train, accuracies_val, best_teta, best_accuracy = NN.train(
+        X_train[:], y_train[:], X_validation, y_validation,X_test, y_test, lr=0.001, nb_epochs=20, minibatch_size=32)
 
     end_time = time.time()
     training_time_numpy = end_time - start_time
     print("Training Time = %.3f seconds" % (training_time_numpy))
     plt.figure(figsize=(14, 6))
-
     plt.plot(losses_train, label="train")
     plt.plot(losses_val, label="validation")
-    plt.title('Courbes d\'apprentissage')
+    plt.title('Courbes d\'apprentissage Loss / Epochs')
     plt.ylabel('Log de vraisemblance négative')
     plt.xlabel('Epoch')
     plt.legend(loc='best')
-
     plt.show()
-    return losses_train, losses_val, training_time_numpy
+
+    plt.figure()
+    plt.plot(accuracies_train, label="train")
+    plt.plot(accuracies_val, label="validation")
+    plt.title('Courbes d\'apprentissage Accuracy / Epochs')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(loc='best')
+    plt.show()
+    return losses_train, losses_val, accuracies_train, accuracies_val, training_time_numpy
 
 
-losses_train_numpy, losses_val_numpy, training_time_numpy = run()
+losses_train_numpy, losses_val_numpy, acc_numpy, acc_val_numpy, training_time_numpy = run()

@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
 
 # shuffle the dataset
-X_train, y_train = shuffle(X_train,y_train)
+X_train, y_train = shuffle(X_train, y_train)
 
 # pre-process: divide the "data" by 255 to shrink its size and keep it between [0-1]
 X_train = X_train/255.0
@@ -24,7 +24,7 @@ y_train = to_categorical(y_train, 10)
 y_test = to_categorical(y_test, 10)
 
 # split test data into test and validation
-X_test, X_validation, y_test, y_validation = train_test_split(X_test, y_test, test_size=0.5, random_state=42)
+X_train, X_validation, y_train, y_validation = train_test_split(X_train, y_train, test_size=0.1, random_state=42)
 
 # set up the DNN architecture
 model = Sequential()
@@ -54,14 +54,24 @@ training_time_keras = end_time - start_time
 print("Training Time = %.3f seconds" % (training_time_keras))
 
 # collect and plot the losses for the training and validation sets
-losses_train = history.history['loss']
-losses_val = history.history['val_loss']
+accuracy = history.history['acc']
+loss = history.history[ 'loss']
+val_accuracy = history.history['val_acc']
+val_loss = history.history['val_loss']
 
 plt.figure(figsize=(14, 6))
-plt.plot(losses_train, label="train")
-plt.plot(losses_val, label="validation")
-plt.title('Courbes d\'apprentissage')
+plt.plot(loss, label="train")
+plt.plot(val_loss, label="validation")
+plt.title('Courbes d\'apprentissage Loss / Epochs')
 plt.ylabel('Log de vraisemblance négative')
+plt.xlabel('Epoch')
+plt.legend(loc='best')
+
+plt.figure()
+plt.plot(accuracy, label="train")
+plt.plot(val_accuracy, label="validation")
+plt.title('Courbes d\'apprentissage Accuracy / Epochs')
+plt.ylabel('Accuracy')
 plt.xlabel('Epoch')
 plt.legend(loc='best')
 
